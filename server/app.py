@@ -65,6 +65,16 @@ def update_red_flag(redflag_id):
 
     db.session.commit()
     return jsonify({'message': 'RedFlag Record updated successfully'}), 200
+# Delete a red flag record
+@app.route('/api/red_flags/<int:redflag_id>', methods=['DELETE'])
+def delete_red_flag(redflag_id):
+    redflag_record = RedFlagRecord.query.get(redflag_id)
+    if not redflag_record:
+        return jsonify({'message': 'RedFlag Record not found'}), 404
+
+    db.session.delete(redflag_record)
+    db.session.commit()
+    return jsonify({'message': 'RedFlag Record deleted successfully'}), 200
 
 
 
