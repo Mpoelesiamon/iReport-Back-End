@@ -36,6 +36,10 @@ def create_red_flag():
     title = data.get('title')
     description = data.get('description')
     location = data.get('location')
+    # Add validation for required fields
+    if not title or not description:
+        return jsonify({'message': 'Title and Description are required fields'}), 400
+
 
 
 
