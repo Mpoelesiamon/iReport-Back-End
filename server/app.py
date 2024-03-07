@@ -50,6 +50,21 @@ def update_red_flag(redflag_id):
     redflag_record = RedFlagRecord.query.get(redflag_id)
     if not redflag_record:
         return jsonify({'message': 'RedFlag Record not found'}), 404
+    data = request.json
+    title = data.get('title')
+    description = data.get('description')
+    location = data.get('location')
+
+     # Update fields if provided
+    if title:
+        redflag_record.title = title
+    if description:
+        redflag_record.description = description
+    if location:
+        redflag_record.location = location
+
+    db.session.commit()
+    return jsonify({'message': 'RedFlag Record updated successfully'}), 200
 
 
 
