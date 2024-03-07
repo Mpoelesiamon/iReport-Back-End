@@ -15,79 +15,77 @@ migrate=Migrate(app,db)
 db.init_app(app)
 api=Api(app)
 
-# API Routes
+class RedFlagRecords(Resource):
+    def get(self):
+        redflag_records=RedFlagRecord.query.all()
+        redflag_records_dict=[redflag_record.serialize() for redflag_record in redflag_records ]
+        return jsonify(redflag_records_dict)
+api.add_resource(RedFlagRecords, '/redflagrecords')
+class RedFlagRecordsById(Resource):
+    def get(self,id):
+        redflag_record=RedFlagRecord.query.get(id)
+        if not redflag_record:
+            return {'error':'redflag_record not found'}, 404
+        return jsonify(redflag_record.serialize())
+    
+    def patch(self,id):
+        data=request.get_json()
+        description = data['description']
+        latitude = data['latitude']
+        longitude = data['longitude']
+        redflag_record = RedFlagRecord.query.get(id)
+        if not redflag_record:
+            return {'error': 'redflag record not found'}, 404
+        else:
+           redflag_record.description = description
+           redflag_record.latitude = latitude
+           redflag_record.longitude = longitude
+           db.session.commit()
 
-# Get all red flag records
-@app.route('/api/red_flags', methods=['GET'])
-def get_red_flags():
-    red_flags = RedFlagRecord.query.all()
-    return jsonify([record.serialize() for record in red_flags])
+           response = make_response(jsonify(redflag_record.serialize()), 200)
+           return response
+     
+    def delete(self,id):
+        redflag_record = RedFlagRecord.query.get(id)
+        if not redflag_record:
+            return {'error': 'redflag record not found'}, 404
 
-# Get a specific red flag record by ID
-@app.route('/api/red_flags/<int:redflag_id>', methods=['GET'])
-def get_red_flag(redflag_id):
-    redflag_record = RedFlagRecord.query.get(redflag_id)
-    if redflag_record:
-        return jsonify(redflag_record.serialize()), 200
-    else:
-        return jsonify({'message': 'RedFlag Record not found'}), 404
+        db.session.delete(redflag_record)
+        db.session.commit()
 
-# Create a new red flag record
-@app.route('/api/red_flags', methods=['POST'])
-def create_red_flag():
-    data = request.json
-    description = data.get('description')
-    latitude = data.get('latitude')
-    longitude = data.get('longitude')
-    images = data.get('images')
-    videos = data.get('videos')
-    if not description or not latitude or not longitude:
-        return jsonify({'message': 'Description, latitude, and longitude are required fields'}), 400
-    new_red_flag = RedFlagRecord(
-        description=description,
-        latitude=latitude,
-        longitude=longitude,
-        images=images,
-        videos=videos
-    )
-    db.session.add(new_red_flag)
-    db.session.commit()
-    return jsonify({'message': 'RedFlag Record created successfully', 'id': new_red_flag.id}), 201
+        response = make_response(jsonify({"message": "redflagrecord record deleted successfully"}), 200)
+        return response
+    def post(self,id):
+        data = request.json
+        description = data.get('description')
+        latitude = data.get('latitude')
+        longitude = data.get('longitude')
+        images = data.get('images')
+        videos = data.get('videos') 
 
-# Update an existing red flag record
-@app.route('/api/red_flags/<int:redflag_id>', methods=['PUT'])
-def update_red_flag(redflag_id):
-    redflag_record = RedFlagRecord.query.get(redflag_id)
-    if not redflag_record:
-        return jsonify({'message': 'RedFlag Record not found'}), 404
-    data = request.json
-    description = data.get('description')
-    latitude = data.get('latitude')
-    longitude = data.get('longitude')
-    images = data.get('images')
-    videos = data.get('videos')
-    if description:
-        redflag_record.description = description
-    if latitude:
-        redflag_record.latitude = latitude
-    if longitude:
-        redflag_record.longitude = longitude
-    if images:
-        redflag_record.images = images
-    if videos:
-        redflag_record.videos = videos
-    db.session.commit()
-    return jsonify({'message': 'RedFlag Record updated successfully'}), 200
+        if not description or not latitude or not longitude:
+            return {'message': 'Description, latitude, and longitude are required fields'}, 400
 
-# Delete a red flag record
-@app.route('/api/red_flags/<int:redflag_id>', methods=['DELETE'])
-def delete_red_flag(redflag_id):
-    redflag_record = RedFlagRecord.query.get(redflag_id)
-    if not redflag_record:
-        return jsonify({'message': 'RedFlag Record not found'}), 404
-    db.session.delete(redflag_record)
-    db.session.commit()
-    return jsonify({'message': 'RedFlag Record deleted successfully'}), 200
+       
+
+        new_data = RedFlagRecord(
+            users_id=id,
+            description=description,
+            latitude=latitude,
+            longitude=longitude,
+            images=images,
+            videos=videos
+        )
+    
+        db.session.add(new_data)
+        db.session.commit()
+        response=make_response (jsonify(new_data.serialize()), 201)
+        return response
+    
+
+
+
+api.add_resource(RedFlagRecordsById,'/redflagrecords/<int:id>')
 
 class InterventionRecords(Resource):
     def get(self):
@@ -95,7 +93,7 @@ class InterventionRecords(Resource):
         intervention_record_dict=[intervention_record.serialize() for intervention_record in intervention_records]
         return jsonify(intervention_record_dict)
 api.add_resource(InterventionRecords, '/interventionrecords')
-from flask import jsonify
+
 
 class InterventionRecordsById(Resource):
     def get(self, id):
@@ -131,7 +129,7 @@ class InterventionRecordsById(Resource):
         response=make_response (jsonify(new_data.serialize()), 201)
         return response
     
-    def put(self,id):
+    def patch(self,id):
         data = request.get_json()
         description = data['description']
         latitude = data['latitude']
