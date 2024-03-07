@@ -39,6 +39,12 @@ def create_red_flag():
     # Add validation for required fields
     if not title or not description:
         return jsonify({'message': 'Title and Description are required fields'}), 400
+    # Create new red flag record
+    new_red_flag = RedFlagRecord(title=title, description=description, location=location, user_id=current_user.id)
+    db.session.add(new_red_flag)
+    db.session.commit()
+    return jsonify({'message': 'RedFlag Record created successfully', 'id': new_red_flag.id}), 201
+
 
 
 
