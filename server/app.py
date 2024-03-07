@@ -44,6 +44,12 @@ def create_red_flag():
     db.session.add(new_red_flag)
     db.session.commit()
     return jsonify({'message': 'RedFlag Record created successfully', 'id': new_red_flag.id}), 201
+# Update an existing red flag record
+@app.route('/api/red_flags/<int:redflag_id>', methods=['PUT'])
+def update_red_flag(redflag_id):
+    redflag_record = RedFlagRecord.query.get(redflag_id)
+    if not redflag_record:
+        return jsonify({'message': 'RedFlag Record not found'}), 404
 
 
 
