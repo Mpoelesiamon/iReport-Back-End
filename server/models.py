@@ -79,7 +79,7 @@ class InterventionRecord(db.Model, SerializerMixin):
 class AdminAction(db.Model, SerializerMixin):
     __tablename__="adminaction"
     id=db.Column(db.Integer, primary_key=True)
-    redflagrecords_id=db.Column(db.Integer, db.ForeignKey("redflagrecord.id"), nullable=False)
+    redflagrecords_id=db.Column(db.Integer, db.ForeignKey("redflagrecord.id"),nullable=False)
     interventionrecords_id=db.Column(db.Integer, db.ForeignKey("interventionrecord.id"), nullable=False)
     action_type=db.Column(db.String)
     comments=db.Column(db.String)

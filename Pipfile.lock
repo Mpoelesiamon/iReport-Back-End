@@ -1,11 +1,15 @@
 {
     "_meta": {
         "hash": {
+<<<<<<< HEAD
             "sha256": "d2b2c1f51f9c87f516bbac7196f9263bc2f5d968452d121c1bf3b7e541e81d66"
+=======
+            "sha256": "33838b2ec22c382fb9890b3d63c98ba5d08c3f0504d4f46c9a1b0af866ee643f"
+>>>>>>> refs/remotes/origin/develop
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.8"
+            "python_version": "3.10.12"
         },
         "sources": [
             {
