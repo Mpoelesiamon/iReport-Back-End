@@ -1,18 +1,29 @@
 from models import User, RedFlagRecord, InterventionRecord, AdminAction,db
-from flask_migrate import Migrate
+from config import app ,db, api
 from flask import Flask,jsonify,request,make_response
-from flask_restful import Api,Resource 
-from flask_cors import CORS
-from datetime import datetime
+from flask_restful import Resource 
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
-app=Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ireporter.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
-CORS(app)
-migrate=Migrate(app,db)
-db.init_app(app)
-api=Api(app)
+
+
+
+
+class Login(Resource):
+    def post(self):
+        username=request.json.get("username")
+        password=request.json.get("password")
+
+        user=User.query.filter_by(username=username).first()
+        if not user:
+            return {"message":"user not found"}
+        if not user.authenticate(password):
+            return {"message":"Invalid password"}
+        access_token=create_access_token(identity=user.id)
+        return {"access_token":access_token}
+
+api.add_resource(Login,'/login')
+        
+
 
 
 if __name__=="__main__":
