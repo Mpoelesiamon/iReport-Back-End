@@ -29,6 +29,14 @@ def get_red_flag(redflag_id):
         return jsonify(redflag_record.serialize()), 200
     else:
         return jsonify({'message': 'RedFlag Record not found'}), 404
+    # Create a new red flag record
+@app.route('/api/red_flags', methods=['POST'])
+def create_red_flag():
+    data = request.json
+    title = data.get('title')
+    description = data.get('description')
+    location = data.get('location')
+
 
 
 if __name__=="__main__":
