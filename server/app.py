@@ -21,6 +21,14 @@ api=Api(app)
 def get_red_flags():
     red_flags = RedFlagRecord.query.all()
     return jsonify([record.serialize() for record in red_flags])
+# Get a specific red flag record by ID
+@app.route('/api/red_flags/<int:redflag_id>', methods=['GET'])
+def get_red_flag(redflag_id):
+    redflag_record = RedFlagRecord.query.get(redflag_id)
+    if redflag_record:
+        return jsonify(redflag_record.serialize()), 200
+    else:
+        return jsonify({'message': 'RedFlag Record not found'}), 404
 
 
 if __name__=="__main__":
