@@ -14,6 +14,14 @@ migrate=Migrate(app,db)
 db.init_app(app)
 api=Api(app)
 
+# API Routes
+
+# Get all red flag records
+@app.route('/api/red_flags', methods=['GET'])
+def get_red_flags():
+    red_flags = RedFlagRecord.query.all()
+    return jsonify([record.serialize() for record in red_flags])
+
 
 if __name__=="__main__":
     app.run(port=5555,debug=True)
