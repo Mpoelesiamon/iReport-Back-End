@@ -3,9 +3,10 @@ from config import app ,db, api
 from flask import Flask,jsonify,request,make_response
 from flask_restful import Resource 
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+import random
+import smtplib
 
-
-
+signup_otp={}
 
 
 class Login(Resource):
@@ -20,9 +21,67 @@ class Login(Resource):
             return {"message":"Invalid password"}
         access_token=create_access_token(identity=user.id)
         return {"access_token":access_token}
+    
+class Signup(Resource):
+    def post(self):
+        username=request.json.get("username")
+        password=request.json.get("password")
+        email=request.json.get("email")
+
+        existing_user=User.query.filter_by(username=username).first()
+
+        if existing_user:
+            return {"message":"Username already exists"}
+        
+        existing_email=User.query.filter_by(email=email).first()
+
+        if existing_email:
+            return {"message":"Email already exists"} 
+        
+        otp=''.join([str(random.randint(0,9))for _ in range (6)])
+        signup_otp[email]=otp
+        send_otp(email,otp)
+        return {"email":email,"message":f"otp sent to your email - {email}"}
+def send_otp(email,otp):
+    smtp_server = 'smtp.gmail.com'        
+    smtp_port = 587
+    sender_email = 'bbeatricemwangi@gmail.com'
+    sender_password = 'dryq iymj frgs okky'
+    subject= 'otp verification'
+    body = f"Otp verification for your email is {otp} "
+    message = f"subject: {subject}\n\n{body}"
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, email, message) 
+
+def verify_otp(stored_otp, otp_user):
+    return stored_otp==otp_user
+
+class Verify(Resource):
+    def post(self):
+        email = request.json.get("email") 
+        otp_user = request.json.get("otp")
+        stored_otp =signup_otp.get(email)
+
+        if stored_otp and verify_otp(stored_otp, otp_user):
+            username=request.json.get("username")
+            password=request.json.get("password")
+            new_user = User(username=username,email=email)
+            new_user.password_hash=password
+            db.session.add(new_user)
+            db.session.commit()
+
+            access_token=create_access_token(identity=new_user.id)
+            return {"token":access_token,"message":"User registered successfully" },201
+        else:
+            return {"error":"401 unauthorised " , "message":"Invalid otp"},401
+
+       
 
 api.add_resource(Login,'/login')
-        
+api.add_resource(Signup,'/signup')
+api.add_resource(Verify,'/verify')        
 
 
 class RedFlagRecords(Resource):
