@@ -77,11 +77,26 @@ class Verify(Resource):
         else:
             return {"error":"401 unauthorised " , "message":"Invalid otp"},401
 
-       
+class UserResource(Resource):
+    @jwt_required()
+    def get(self):
+        current_user_id=get_jwt_identity()
+        user = User.query.filter_by(id=current_user_id).first()
+        if not user:
+            return {"error":"user does not exist"},404
+        user_data = {
+            "id":user.id,
+            "email":user.email,
+            "username":user.username
+
+        }
+        return make_response(jsonify(user_data),200) 
+
 
 api.add_resource(Login,'/login')
 api.add_resource(Signup,'/signup')
-api.add_resource(Verify,'/verify')        
+api.add_resource(Verify,'/verify')       
+api.add_resource(UserResource,'/user') 
 
 
 class RedFlagRecords(Resource):
