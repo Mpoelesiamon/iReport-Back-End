@@ -228,7 +228,8 @@ class InterventionRecordsById(Resource):
         return response
 
 
-api.add_resource(InterventionRecordsById, '/interventionrecords/<int:id>')
+api.add_resource(InterventionRecordsById, '/interventionrecords/<int>')
+
 
 
 
