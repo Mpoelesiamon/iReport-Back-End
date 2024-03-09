@@ -244,6 +244,71 @@ class InterventionRecordsById(Resource):
 
 
 api.add_resource(InterventionRecordsById, '/interventionrecords/<int>')
+class AdminActions(Resource):
+    def get(self):
+        admins=AdminAction.query.all()
+        admin_dict=[admin.serialize() for admin in admins]
+        return jsonify(admin_dict)
+api.add_resource(AdminActions, '/adminactions') 
+
+class AdminActionById(Resource):
+    def get(self,id):
+        admin=AdminAction.query.get(id)
+        if not admin:
+           return {'error':'admin not found'}, 404
+        return jsonify(admin.serialize())
+    
+    def post(self,id):
+        data = request.get_json()
+        # redflagrecords_id = data.get('redflagrecords_id')
+        # interventionrecords_id = data.get('interventionrecords_id')
+        action_type = data.get('action_type')
+        comments = data.get('comments')
+    
+        if not action_type or not comments:
+            return {'error': 'the action_type, and comments are required fields'}, 400
+        
+        new_data = AdminAction(
+            redflagrecords_id= id,
+            interventionrecords_id=id,
+            action_type=action_type,
+            comments=comments
+    )
+    
+        db.session.add(new_data)
+        db.session.commit() 
+    
+        response = make_response(jsonify(new_data.serialize()), 201)
+        return response
+    def patch(self,id):
+        data=request.get_json()
+        action_type = data.get('action_type')
+        comments = data.get('comments')
+        admin=AdminAction.query.get(id)
+
+        if not action_type or not comments:
+            return {'error': 'the action_type, and comments are required fields'}, 400
+        else:
+            admin.action_type=action_type
+            admin.comments=comments
+            db.session.commit()
+            response=make_response (jsonify(admin.serialize()), 200)
+            return response
+    
+    def delete(self,id):
+        admin=AdminAction.query.get(id)
+        if not admin:
+            return {'error':'admin not found'}, 400
+        db.session.delete(admin)
+        db.session.commit()
+        response=make_response(jsonify({'message':'admin record deleted successfully'}), 200)
+        return response
+
+
+
+api.add_resource(AdminActionById, '/adminactions/<int:id>')
+
+
 
 
 
