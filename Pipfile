@@ -14,6 +14,7 @@ flask-bcrypt = "*"
 flask-restful = "*"
 flask-sqlalchemy = "*"
 flask-jwt-extended = "*"
+cloudinary = "*"
 
 [dev-packages]
 
