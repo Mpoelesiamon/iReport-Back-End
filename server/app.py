@@ -6,6 +6,19 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 import random
 import smtplib
 
+import cloudinary
+# Import the cloudinary.api for managing assets
+import cloudinary.api
+# Import the cloudinary.uploader for uploading assets
+import cloudinary.uploader
+
+cloudinary.config(
+    cloud_name="doyuruatj",
+    api_key="448636314545994",
+    api_secret="nmNAYoDpIsreAAJtXm6Ktem6Qlo",
+    secure=True,
+)
+
 signup_otp={}
 
 
@@ -140,24 +153,35 @@ class RedFlagRecordsById(Resource):
         response = make_response(jsonify({"message": "redflagrecord record deleted successfully"}), 200)
         return response
     def post(self,id):
-        data = request.json
+        data = request.form
         description = data.get('description')
         latitude = data.get('latitude')
         longitude = data.get('longitude')
-        images = data.get('images')
+        images = request.files.get('images')
         videos = data.get('videos') 
 
         if not description or not latitude or not longitude:
             return {'message': 'Description, latitude, and longitude are required fields'}, 400
 
-       
+        # Check if file uploaded and is an image
+        if images.filename == '':
+            return {'message': 'No image selected for upload'}, 400
+        if not allowed_file(images.filename):
+            return {'message': 'Invalid file type. Only images are allowed'}, 400
+
+        # Upload image to Cloudinary
+        try:
+            image_upload_result = cloudinary.uploader.upload(images)
+        except Exception as e:
+            return {'message': f'Error uploading image: {str(e)}'}, 500
+
 
         new_data = RedFlagRecord(
             users_id=id,
             description=description,
             latitude=latitude,
             longitude=longitude,
-            images=images,
+            images=image_upload_result['secure_url'],
             videos=videos
         )
     
@@ -167,7 +191,8 @@ class RedFlagRecordsById(Resource):
         return response
     
 
-
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
 
 api.add_resource(RedFlagRecordsById,'/redflagrecords/<int:id>')
 
