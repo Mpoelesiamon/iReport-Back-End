@@ -2,6 +2,7 @@ from models import User, RedFlagRecord, InterventionRecord, AdminAction,db
 from config import app ,db, api
 from flask import Flask,jsonify,request,make_response
 from flask_restful import Resource 
+from flask_login import UserMixin
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import random
 import smtplib
@@ -109,18 +110,19 @@ class checksession(Resource):
 class UserResource(Resource):
     @jwt_required()
     def get(self):
-        current_user_id=get_jwt_identity()
+        current_user_id = get_jwt_identity()
         user = User.query.filter_by(id=current_user_id).first()
         if not user:
-            return {"error":"user does not exist"},404
+            return {"error": "User does not exist"}, 404
+        
         user_data = {
-            "id":user.id,
-            "email":user.email,
-            "username":user.username
-
+            "id": user.id,
+            "email": user.email,
+            "username": user.username,
+            "role": user.role  # Include the 'role' field in the response
         }
-        return make_response(jsonify(user_data),200) 
-
+        
+        return make_response(jsonify(user_data), 200)
  
 
 api.add_resource(Login,'/login')
@@ -288,10 +290,24 @@ class InterventionRecordsById(Resource):
 
 api.add_resource(InterventionRecordsById, '/interventionrecords/<int>')
 class AdminActions(Resource):
+    @jwt_required()
     def get(self):
-        admins=AdminAction.query.all()
-        admin_dict=[admin.serialize() for admin in admins]
-        return jsonify(admin_dict)
+        current_user_id = get_jwt_identity()
+        user = User.query.filter_by(id=current_user_id).first()
+        
+        if not user or user.role != 'admin':
+            return {"message":"Unauthorised access"}
+            # abort(403, message="Unauthorized access")  # Return forbidden error if user is not an admin
+        
+        admins = AdminAction.query.all()
+        admin_dict = [admin.serialize() for admin in admins]
+        intervention_records=InterventionRecord.query.all()
+        intervention_record_dict=[intervention_record.serialize() for intervention_record in intervention_records]
+        redflag_records=RedFlagRecord.query.all()
+        redflag_records_dict=[redflag_record.serialize() for redflag_record in redflag_records ]
+        
+       
+        return jsonify(intervention_record_dict,admin_dict,redflag_records_dict)
 api.add_resource(AdminActions, '/adminactions') 
 
 class AdminActionById(Resource):
