@@ -5,7 +5,7 @@ from flask_restful import Resource
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import random
 import smtplib
-
+from enum import Enum
 import cloudinary
 # Import the cloudinary.api for managing assets
 import cloudinary.api
@@ -29,9 +29,11 @@ class Login(Resource):
 
         user=User.query.filter_by(username=username).first()
         if not user:
-            return {"message":"user not found"}
+            return {"message":"user not found"}, 404
         if not user.authenticate(password):
-            return {"message":"Invalid password"}
+            return {"message":"Invalid password"}, 401
+        # access_token=create_access_token(identity=user.id, additional_claims={"role": user.role.value})
+
         access_token=create_access_token(identity=user.id)
         return {"access_token":access_token}
     
@@ -89,6 +91,20 @@ class Verify(Resource):
             return {"token":access_token,"message":"User registered successfully" },201
         else:
             return {"error":"401 unauthorised " , "message":"Invalid otp"},401
+class checksession(Resource):
+    @jwt_required()
+    def get(self):
+        current_user_id=get_jwt_identity()
+        user = User.query.filter_by(id=current_user_id).first()
+        if not user:
+            return {"error":"user does not exist"},404  
+        user_data = {
+            "id":user.id,
+            "email":user.email,
+            "username":user.username
+
+        }
+        return make_response(jsonify(user_data),200)
 
 class UserResource(Resource):
     @jwt_required()
@@ -105,11 +121,13 @@ class UserResource(Resource):
         }
         return make_response(jsonify(user_data),200) 
 
+ 
 
 api.add_resource(Login,'/login')
 api.add_resource(Signup,'/signup')
 api.add_resource(Verify,'/verify')       
 api.add_resource(UserResource,'/user') 
+api.add_resource(checksession,'/checksession')
 
 
 class RedFlagRecords(Resource):
@@ -282,7 +300,7 @@ class AdminActionById(Resource):
         if not admin:
            return {'error':'admin not found'}, 404
         return jsonify(admin.serialize())
-    
+    @jwt_required
     def post(self,id):
         data = request.get_json()
         # redflagrecords_id = data.get('redflagrecords_id')
