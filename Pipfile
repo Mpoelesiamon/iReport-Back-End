@@ -13,8 +13,8 @@ flask-cors = "*"
 flask-bcrypt = "*"
 flask-restful = "*"
 flask-sqlalchemy = "*"
-flask-jwt-extended = "*"
 cloudinary = "*"
+flask-jwt-extended = "*"
 
 [dev-packages]
 
