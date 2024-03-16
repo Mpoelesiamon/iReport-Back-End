@@ -2,7 +2,7 @@ from models import User, RedFlagRecord, InterventionRecord, AdminAction,db
 from config import app ,db, api
 from flask import Flask,jsonify,request,make_response
 from flask_restful import Resource 
-from flask_login import UserMixin
+# from flask_login import UserMixin
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import random
 import smtplib
@@ -173,60 +173,59 @@ class RedFlagRecordsById(Resource):
 
         response = make_response(jsonify({"message": "redflagrecord record deleted successfully"}), 200)
         return response
-def allowed_file(filename):
-    print(f"Checking file: {filename}")
-    extension = filename.rsplit('.', 1)[1].lower()
-    print(f"File extension: {extension}")
-    return '.' in filename and extension in {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'MP4'}
-
-class redflags(Resource):
-    def post(self):
-        data = request.form
-        description = data.get('description')
-        latitude = data.get('latitude')
-        longitude = data.get('longitude')
-        images = request.files.get('images')
-        videos = request.files.get('videos')
-
-        if not description or not latitude or not longitude:
-            return {'message': 'Description, latitude, and longitude are required fields'}, 400
-        
-        if images is None or videos is None:
-            return { "message":"No file selected for upload"},400
-        
-        # Check if file uploaded and is an image
-        if images.filename == '':
-            return {'message': 'No image selected for upload'}, 400
-        if not allowed_file(images.filename):
-            return {'message': 'Invalid file type. Only images are allowed'}, 400
-        
-        # Check if file uploaded and is a video
-        if videos.filename == '':
-            return {'message': 'No video selected for upload'}, 400
-        if not allowed_file(videos.filename):
-            return {'message': 'Invalid file type. Only videos are allowed'}, 400
-        
-        try:
-            image_upload_result = cloudinary.uploader.upload(images)
-            video_upload_result = cloudinary.uploader.upload(videos)
-        except Exception as e:
-            return {'message': f'Error uploading file: {str(e)}'}, 500
-
-        new_data = RedFlagRecord(
-            description=description,
-            latitude=latitude,
-            longitude=longitude,
-            images=image_upload_result['secure_url'],
-            videos=video_upload_result['secure_url'],
-        )
     
-        db.session.add(new_data)
-        db.session.commit()
-        response = make_response(jsonify(new_data.serialize()), 201)
-        return response
 
-api.add_resource(redflags, "/redflags")
+class RedFlags(Resource):
+    @jwt_required()
+    def post(self):
+        try:
+            current_user_id = get_jwt_identity()
 
+            data = request.form
+            description = data.get('description')
+            latitude = data.get('latitude')
+            longitude = data.get('longitude')
+            images = request.files.get('images')
+            videos = request.files.get('videos')
+
+            if not all([description, latitude, longitude, images, videos]):
+                return {'message': 'Description, latitude, images, and videos are required fields'}, 400
+
+            # Check file extensions
+            allowed_image_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+            allowed_video_extensions = {'mp4'}
+
+            if not allowed_file(images.filename, allowed_image_extensions):
+                return {'message': 'Invalid image file type. Only png, jpg, jpeg, gif are allowed'}, 400
+            if not allowed_file(videos.filename, allowed_video_extensions):
+                return {'message': 'Invalid video file type. Only mp4 is allowed'}, 400
+
+            # Upload images and videos to Cloudinary
+            image_upload_result = cloudinary.uploader.upload(images, resource_type="image")
+            video_upload_result = cloudinary.uploader.upload(videos, resource_type="video")
+
+            # Save data to database
+            new_data = RedFlagRecord(
+                users_id=current_user_id,
+                description=description,
+                latitude=latitude,
+                longitude=longitude,
+                images=image_upload_result['secure_url'],
+                videos=video_upload_result['secure_url']
+            )
+            db.session.add(new_data)
+            db.session.commit()
+
+            return {"message": "Red flag data posted successfully"}, 201
+            # return []
+        except Exception as e:
+            
+            return {'message': f'An error occurred: {str(e)}'}, 500
+
+def allowed_file(filename, allowed_extensions):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
+api.add_resource(RedFlags, "/redflags")
 
 
                       
