@@ -11,9 +11,9 @@ def seed_data():
         AdminAction.query.delete()
 
 
-        user1 = User(username='user1', email='user1@example.com')
+        user1 = User(username='user1', email='user1@example.com',role='admin')
         user1.password_hash = "password"
-        user2 = User(username='user2', email='user2@example.com')
+        user2 = User(username='user2', email='user2@example.com',role='user')
         user2.password_hash = "password"
 
         db.session.add(user1)

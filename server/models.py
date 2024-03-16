@@ -15,6 +15,7 @@ class User(db.Model, SerializerMixin):
     email=db.Column(db.String, nullable=False)
     _password_hash=db.Column(db.String, nullable=False)
     created_at=db.Column(db.DateTime, default=datetime.utcnow)
+    role=db.Column(db.String, nullable=False,default='user')
     updated_at = db.Column(db.DateTime, default=datetime.utcnow,onupdate=datetime.utcnow)
 
     red_flag_records=db.relationship("RedFlagRecord", backref="user")
