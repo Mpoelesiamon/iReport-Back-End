@@ -15,6 +15,7 @@ flask-restful = "*"
 flask-sqlalchemy = "*"
 cloudinary = "*"
 flask-jwt-extended = "*"
+flask-login = "*"
 
 [dev-packages]
 
