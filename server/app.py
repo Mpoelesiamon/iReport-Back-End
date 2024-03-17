@@ -163,17 +163,22 @@ class RedFlagRecordsById(Resource):
            response = make_response(jsonify(redflag_record.serialize()), 200)
            return response
      
-    def delete(self,id):
+    def delete(self, id):
         redflag_record = RedFlagRecord.query.get(id)
         if not redflag_record:
-            return {'error': 'redflag record not found'}, 404
+                return {'error': 'RedFlagRecord not found'}, 404
+
+    # Delete associated AdminAction records
+        admin_actions = AdminAction.query.filter_by(redflagrecords_id=id).all()
+        for admin_action in admin_actions:
+            db.session.delete(admin_action)
 
         db.session.delete(redflag_record)
         db.session.commit()
 
-        response = make_response(jsonify({"message": "redflagrecord record deleted successfully"}), 200)
+        response = make_response(jsonify({"message": "RedFlagRecord deleted successfully"}), 200)
         return response
-    
+api.add_resource(RedFlagRecordsById,'/redflagrecords/<int:id>')   
 
 class RedFlags(Resource):
     @jwt_required()
@@ -229,7 +234,7 @@ api.add_resource(RedFlags, "/redflags")
 
 
                       
-api.add_resource(RedFlagRecordsById,'/redflagrecords/<int:id>')
+# api.add_resource(RedFlagRecordsById,'/redflagrecords/<int:id>')
 
 class InterventionRecords(Resource):
     def get(self):
@@ -307,24 +312,43 @@ class InterventionRecordsById(Resource):
             return {'error': 'intervention_record not found'}, 404
         return jsonify(intervention_record.serialize())
 
-    
-        
-    def delete(self, id):
-        try:
-            intervention_record = InterventionRecord.query.get(id)
-            if not intervention_record:
-                return {'error': 'Intervention record not found'}, 404
-
-            db.session.delete(intervention_record)
+    def patch(self,id):
+        data=request.get_json()
+        description=data['description']
+        latitude=data['latitude']
+        longitude=data['longitude']
+        intervention_record=InterventionRecord.query.get(id)
+        if not intervention_record:
+            return {'error':'intervention_record not found'},404
+        else:
+            intervention_record.description=description
+            intervention_record.latitude=latitude
+            intervention_record.longitude=longitude
             db.session.commit()
 
-            return jsonify({"message": "Intervention record deleted successfully"}), 200
-        except Exception as e:
-             return {'error': f'An error occurred: {str(e)}'}, 500
+        response = make_response(jsonify(intervention_record.serialize()), 200)
+        return response
+
+        
+    def delete(self, id):
+        intervention_record = InterventionRecord.query.get(id)
+        if not intervention_record:
+                return {'error': 'InterventionRecord not found'}, 404
+
+    # Delete associated AdminAction records
+        admin_actions = AdminAction.query.filter_by(interventionrecords_id=id).all()
+        for admin_action in admin_actions:
+            db.session.delete(admin_action)
+
+        db.session.delete(intervention_record)
+        db.session.commit()
+
+        response = make_response(jsonify({"message": "InterventionRecord deleted successfully"}), 200)
+        return response
 
 
 
-api.add_resource(InterventionRecordsById, '/interventionrecords/<int>')
+api.add_resource(InterventionRecordsById, '/interventionrecords/<int:id>')
 class AdminActions(Resource):
     @jwt_required()
     def get(self):
