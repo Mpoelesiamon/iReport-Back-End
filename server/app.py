@@ -239,6 +239,67 @@ class InterventionRecords(Resource):
 api.add_resource(InterventionRecords, '/interventionrecords')
 
 
+class Interventions(Resource):
+    @jwt_required()
+    def post(self):
+        try:
+            current_user_id = get_jwt_identity()
+
+            data = request.form
+            description = data.get('description')
+            latitude = data.get('latitude')
+            longitude = data.get('longitude')
+            images = request.files.get('images')
+            videos = request.files.get('videos')
+
+            app.logger.info(f"Received request with description: {description}, latitude: {latitude}, longitude: {longitude}, images: {images}, videos: {videos}")
+
+            if not all([description, latitude, longitude, images, videos]):
+                return {'message': 'Description, latitude, images, and videos are required fields'}, 400
+
+            # Check file extensions
+            allowed_image_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+            allowed_video_extensions = {'mp4'}
+
+            if not allowed_file(images.filename, allowed_image_extensions):
+                return {'message': 'Invalid image file type. Only png, jpg, jpeg, gif are allowed'}, 400
+            if not allowed_file(videos.filename, allowed_video_extensions):
+                return {'message': 'Invalid video file type. Only mp4 is allowed'}, 400
+
+            # Upload images and videos to Cloudinary
+            image_upload_result = cloudinary.uploader.upload(images, resource_type="image")
+            video_upload_result = cloudinary.uploader.upload(videos, resource_type="video")
+
+            # Save data to database
+            new_data = InterventionRecord(
+                users_id=current_user_id,
+                description=description,
+                latitude=latitude,
+                longitude=longitude,
+                images=image_upload_result['secure_url'],
+                videos=video_upload_result['secure_url']
+            )
+            db.session.add(new_data)
+            db.session.commit()
+
+            return {"message": "Intervention data posted successfully"}, 201
+        except Exception as e:
+            # Log the full traceback for debugging purposes
+            app.logger.error(f"An error occurred: {e}", exc_info=True)
+            return {'message': 'An error occurred while processing your request'}, 500
+
+    def allowed_file(filename, allowed_extensions):
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
+
+
+
+
+api.add_resource(Interventions, "/interventions")
+
+
+
+
 class InterventionRecordsById(Resource):
     def get(self, id):
         intervention_record = InterventionRecord.query.get(id)
@@ -246,61 +307,21 @@ class InterventionRecordsById(Resource):
             return {'error': 'intervention_record not found'}, 404
         return jsonify(intervention_record.serialize())
 
-    def post(self,id):
-        data = request.json
-        description = data.get('description')
-        latitude = data.get('latitude')
-        longitude = data.get('longitude')
-        images = data.get('images')
-        videos = data.get('videos') 
-
-        if not description or not latitude or not longitude:
-            return {'message': 'Description, latitude, and longitude are required fields'}, 400
-
-       
-
-        new_data = InterventionRecord(
-            users_id=id,
-            description=description,
-            latitude=latitude,
-            longitude=longitude,
-            images=images,
-            videos=videos
-        )
     
-        db.session.add(new_data)
-        db.session.commit()
-        response=make_response (jsonify(new_data.serialize()), 201)
-        return response
-    
-    def patch(self,id):
-        data = request.get_json()
-        description = data['description']
-        latitude = data['latitude']
-        longitude = data['longitude']
-        intervention_record = InterventionRecord.query.get(id)
-        if not intervention_record:
-            return {'error': 'Intervention record not found'}, 404
-        else:
-           intervention_record.description = description
-           intervention_record.latitude = latitude
-           intervention_record.longitude = longitude
-           db.session.commit()
-
-           response = make_response(jsonify(intervention_record.serialize()), 200)
-           return response
         
-    def delete(self,id):
+    def delete(self, id):
+        try:
+            intervention_record = InterventionRecord.query.get(id)
+            if not intervention_record:
+                return {'error': 'Intervention record not found'}, 404
 
-        intervention_record = InterventionRecord.query.get(id)
-        if not intervention_record:
-            return {'error': 'Intervention record not found'}, 404
+            db.session.delete(intervention_record)
+            db.session.commit()
 
-        db.session.delete(intervention_record)
-        db.session.commit()
+            return jsonify({"message": "Intervention record deleted successfully"}), 200
+        except Exception as e:
+             return {'error': f'An error occurred: {str(e)}'}, 500
 
-        response = make_response(jsonify({"message": "Intervention record deleted successfully"}), 200)
-        return response
 
 
 api.add_resource(InterventionRecordsById, '/interventionrecords/<int>')
