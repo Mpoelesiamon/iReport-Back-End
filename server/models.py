@@ -55,15 +55,13 @@ class RedFlagRecord(db.Model, SerializerMixin):
     # user = db.relationship('User', backref='red_flag_record')
 
     def serialize(self):
-        return {"id":self.id, "description":self.description, "latitude":self.latitude, "longitude":self.longitude, "images": self.images, "videos":self.videos, "created_at":self.created_at, "updated_at":self.updated_at}
+        return {"id":self.id, "description":self.description, "images": self.images, "videos":self.videos, "created_at":self.created_at, "updated_at":self.updated_at}
 
 class InterventionRecord(db.Model, SerializerMixin):
     __tablename__="interventionrecord"
     id=db.Column(db.Integer, primary_key=True)
     users_id=db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     description=db.Column(db.String, nullable=False )
-    latitude=db.Column(db.Float,nullable=False)
-    longitude=db.Column(db.Float, nullable=False)
     images=db.Column(db.String, nullable=False)  
     videos=db.Column(db.String, nullable=False)  
     created_at=db.Column(db.DateTime, default=datetime.utcnow)
@@ -72,7 +70,7 @@ class InterventionRecord(db.Model, SerializerMixin):
     # user = db.relationship('User', backref='intervention_record')
 
     def serialize(self):
-        return {"id":self.id, "description":self.description, "latitude":self.latitude, "longitude":self.longitude, "images": self.images, "videos":self.videos, "created_at":self.created_at, "updated_at":self.updated_at}
+        return {"id":self.id, "description":self.description, "images": self.images, "videos":self.videos, "created_at":self.created_at, "updated_at":self.updated_at}
 
 class AdminAction(db.Model, SerializerMixin):
     __tablename__="adminaction"

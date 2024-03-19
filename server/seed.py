@@ -36,8 +36,6 @@ def seed_data():
         intervention_record1 = InterventionRecord(
             users_id=user2.id,
             description='Request for road repair',
-            latitude=98.765,
-            longitude=-43.210,
             images="one",
             videos="one",
             created_at=datetime.utcnow(),

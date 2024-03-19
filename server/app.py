@@ -184,11 +184,11 @@ class RedFlags(Resource):
 
             data = request.form
             description = data.get('description')
-            images = request.files.get('images')
+            images = request.files.get('image')
             videos = request.files.get('videos')
 
             if not all([description, images, videos]):
-                return {'message': 'Description, latitude, images, and videos are required fields'}, 400
+                return {'message': 'Description, images, and videos are required fields'}, 400
 
             # Check file extensions
             allowed_image_extensions = {'png', 'jpg', 'jpeg', 'gif'}
@@ -244,15 +244,13 @@ class Interventions(Resource):
 
             data = request.form
             description = data.get('description')
-            latitude = data.get('latitude')
-            longitude = data.get('longitude')
             images = request.files.get('images')
             videos = request.files.get('videos')
 
-            app.logger.info(f"Received request with description: {description}, latitude: {latitude}, longitude: {longitude}, images: {images}, videos: {videos}")
+            app.logger.info(f"Received request with description: {description}, images: {images}, videos: {videos}")
 
-            if not all([description, latitude, longitude, images, videos]):
-                return {'message': 'Description, latitude, images, and videos are required fields'}, 400
+            if not all([description, images, videos]):
+                return {'message': 'Description, images, and videos are required fields'}, 400
 
             # Check file extensions
             allowed_image_extensions = {'png', 'jpg', 'jpeg', 'gif'}
@@ -271,8 +269,6 @@ class Interventions(Resource):
             new_data = InterventionRecord(
                 users_id=current_user_id,
                 description=description,
-                latitude=latitude,
-                longitude=longitude,
                 images=image_upload_result['secure_url'],
                 videos=video_upload_result['secure_url']
             )
@@ -307,15 +303,11 @@ class InterventionRecordsById(Resource):
     def patch(self,id):
         data=request.get_json()
         description=data['description']
-        latitude=data['latitude']
-        longitude=data['longitude']
         intervention_record=InterventionRecord.query.get(id)
         if not intervention_record:
             return {'error':'intervention_record not found'},404
         else:
             intervention_record.description=description
-            intervention_record.latitude=latitude
-            intervention_record.longitude=longitude
             db.session.commit()
 
         response = make_response(jsonify(intervention_record.serialize()), 200)
