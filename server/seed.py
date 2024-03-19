@@ -24,8 +24,6 @@ def seed_data():
         red_flag_record1 = RedFlagRecord(
             users_id=user1.id,
             description='Corruption incident',
-            latitude=123.456,
-            longitude=-78.910,
             images="one",
             videos="one",
             created_at=datetime.utcnow(),

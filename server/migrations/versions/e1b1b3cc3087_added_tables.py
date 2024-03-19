@@ -1,8 +1,8 @@
-"""create db
+"""Added tables
 
-Revision ID: 51ddedc2bc59
+Revision ID: e1b1b3cc3087
 Revises: 
-Create Date: 2024-03-16 22:00:11.574748
+Create Date: 2024-03-19 22:32:26.675958
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '51ddedc2bc59'
+revision = 'e1b1b3cc3087'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -31,11 +31,11 @@ def upgrade():
     op.create_table('interventionrecord',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('users_id', sa.Integer(), nullable=False),
-    sa.Column('description', sa.String(), nullable=True),
-    sa.Column('latitude', sa.Float(), nullable=True),
-    sa.Column('longitude', sa.Float(), nullable=True),
-    sa.Column('images', sa.String(), nullable=True),
-    sa.Column('videos', sa.String(), nullable=True),
+    sa.Column('description', sa.String(), nullable=False),
+    sa.Column('latitude', sa.Float(), nullable=False),
+    sa.Column('longitude', sa.Float(), nullable=False),
+    sa.Column('images', sa.String(), nullable=False),
+    sa.Column('videos', sa.String(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['users_id'], ['user.id'], ),
@@ -45,8 +45,6 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('users_id', sa.Integer(), nullable=False),
     sa.Column('description', sa.String(), nullable=False),
-    sa.Column('latitude', sa.Float(), nullable=False),
-    sa.Column('longitude', sa.Float(), nullable=False),
     sa.Column('images', sa.String(), nullable=False),
     sa.Column('videos', sa.String(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),

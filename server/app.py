@@ -149,15 +149,11 @@ class RedFlagRecordsById(Resource):
     def patch(self,id):
         data=request.get_json()
         description = data['description']
-        latitude = data['latitude']
-        longitude = data['longitude']
         redflag_record = RedFlagRecord.query.get(id)
         if not redflag_record:
             return {'error': 'redflag record not found'}, 404
         else:
            redflag_record.description = description
-           redflag_record.latitude = latitude
-           redflag_record.longitude = longitude
            db.session.commit()
 
            response = make_response(jsonify(redflag_record.serialize()), 200)
@@ -188,12 +184,10 @@ class RedFlags(Resource):
 
             data = request.form
             description = data.get('description')
-            latitude = data.get('latitude')
-            longitude = data.get('longitude')
             images = request.files.get('images')
             videos = request.files.get('videos')
 
-            if not all([description, latitude, longitude, images, videos]):
+            if not all([description, images, videos]):
                 return {'message': 'Description, latitude, images, and videos are required fields'}, 400
 
             # Check file extensions
@@ -213,8 +207,6 @@ class RedFlags(Resource):
             new_data = RedFlagRecord(
                 users_id=current_user_id,
                 description=description,
-                latitude=latitude,
-                longitude=longitude,
                 images=image_upload_result['secure_url'],
                 videos=video_upload_result['secure_url']
             )

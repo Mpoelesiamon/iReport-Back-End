@@ -47,8 +47,6 @@ class RedFlagRecord(db.Model, SerializerMixin):
     id=db.Column(db.Integer, primary_key=True)
     users_id=db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     description=db.Column(db.String,nullable=False)
-    latitude=db.Column(db.Float,nullable=False)
-    longitude=db.Column(db.Float,nullable=False)
     images=db.Column(db.String,nullable=False) 
     videos=db.Column(db.String,nullable=False)  
     created_at=db.Column(db.DateTime, default=datetime.utcnow)
