@@ -244,7 +244,7 @@ class Interventions(Resource):
 
             data = request.form
             description = data.get('description')
-            images = request.files.get('images')
+            images = request.files.get('image')
             videos = request.files.get('videos')
 
             app.logger.info(f"Received request with description: {description}, images: {images}, videos: {videos}")
