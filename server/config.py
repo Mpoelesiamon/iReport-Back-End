@@ -5,12 +5,13 @@ from flask_restful import Api
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from datetime import  timedelta
+import os
 from flask_jwt_extended import  JWTManager
 
 db = SQLAlchemy()
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///ireporter.db"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
 app.config["JWT_SECRET_KEY"] = "please-remember-to-change-me"
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)

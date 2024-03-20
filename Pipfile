@@ -16,6 +16,7 @@ flask-sqlalchemy = "*"
 cloudinary = "*"
 flask-jwt-extended = "*"
 flask-login = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 
