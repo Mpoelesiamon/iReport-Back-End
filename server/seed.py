@@ -24,8 +24,6 @@ def seed_data():
         red_flag_record1 = RedFlagRecord(
             users_id=user1.id,
             description='Corruption incident',
-            latitude=123.456,
-            longitude=-78.910,
             images="one",
             videos="one",
             created_at=datetime.utcnow(),
@@ -38,8 +36,6 @@ def seed_data():
         intervention_record1 = InterventionRecord(
             users_id=user2.id,
             description='Request for road repair',
-            latitude=98.765,
-            longitude=-43.210,
             images="one",
             videos="one",
             created_at=datetime.utcnow(),
