@@ -376,7 +376,7 @@ class AdminActionById(Resource):
         if not admin:
            return {'error':'admin not found'}, 404
         return jsonify(admin.serialize())
-    @jwt_required
+    
     def post(self,id):
         data = request.get_json()
         # redflagrecords_id = data.get('redflagrecords_id')
